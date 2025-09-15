@@ -67,6 +67,7 @@ export default function BookingForm() {
         ]);
 
         if (optionsRes.success && optionsRes.data) {
+          console.log('Options data structure:', optionsRes.data[0]); // Debug: Check actual column names
           setOptions(optionsRes.data);
         }
         if (expensesRes.success && expensesRes.data) {
@@ -98,7 +99,7 @@ export default function BookingForm() {
   // Get filtered categories
   const getFilteredCategories = useCallback(() => {
     return options
-      .filter(opt => opt.Department === 'Books Dasosmi' && opt.Type === 'Expense')
+      .filter(opt => opt.Department === 'Books Dasosmi' && opt['Type (Order/Donation)'] === 'Expense')
       .map(opt => opt.Category)
       .filter(Boolean);
   }, [options]);

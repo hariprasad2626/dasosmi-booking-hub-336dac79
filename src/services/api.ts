@@ -7,7 +7,7 @@ export interface ApiResponse<T> {
 }
 
 export interface OptionData {
-  Type: string;
+  'Type (Order/Donation)': string;
   Category: string;
   Department: string;
   'From Department': string;
