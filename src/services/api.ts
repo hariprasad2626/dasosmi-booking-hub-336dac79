@@ -51,8 +51,7 @@ class ApiService {
       const response = await fetch(url, {
         ...options,
         headers: {
-          'Content-Type': 'application/json',
-          ...options?.headers,
+          ...(options?.headers || {}),
         },
       });
 
@@ -86,6 +85,9 @@ class ApiService {
   async saveBooking(bookingData: BookingData): Promise<ApiResponse<{ id: string }>> {
     return this.makeRequest<{ id: string }>(BASE_URL, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
       body: JSON.stringify({
         action: 'saveBooking',
         ...bookingData
