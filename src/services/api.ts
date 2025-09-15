@@ -29,6 +29,7 @@ export interface DonorData {
   Address: string;
   'PAN No.': string;
   'Mobile No.': string;
+  'Mobile No': string; // Alternative column name without period
 }
 
 export interface BookingData {

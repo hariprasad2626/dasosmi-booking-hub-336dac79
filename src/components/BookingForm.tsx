@@ -73,6 +73,7 @@ export default function BookingForm() {
           setExpenses(expensesRes.data);
         }
         if (donorsRes.success && donorsRes.data) {
+          console.log('Donors data structure:', donorsRes.data[0]); // Debug: Check actual column names
           setDonors(donorsRes.data);
         }
       } catch (error) {
@@ -313,11 +314,11 @@ export default function BookingForm() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-popover">
-                          {donors.map((donor) => (
-                            <SelectItem key={donor['Donor ID']} value={donor['Donor ID']}>
-                              {`${donor['Donor Name']} - ${donor['Mobile No.']} - ${donor.Address}`}
-                            </SelectItem>
-                          ))}
+                           {donors.map((donor) => (
+                             <SelectItem key={donor['Donor ID']} value={donor['Donor ID']}>
+                               {`${donor['Donor Name']} - ${donor['Mobile No.'] || donor['Mobile No'] || 'No Mobile'} - ${donor.Address}`}
+                             </SelectItem>
+                           ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
