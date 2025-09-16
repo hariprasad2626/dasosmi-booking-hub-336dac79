@@ -95,6 +95,10 @@ class ApiService {
       }),
     });
   }
+
+  async getBookings(): Promise<ApiResponse<BookingData[]>> {
+    return this.makeRequest<BookingData[]>(`${BASE_URL}?action=getBookings`);
+  }
 }
 
 export const apiService = new ApiService();

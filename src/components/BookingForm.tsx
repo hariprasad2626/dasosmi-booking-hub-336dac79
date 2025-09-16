@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, Search, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -12,9 +12,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { apiService, type OptionData, type ExpenseData, type DonorData } from '@/services/api';
+import { apiService, type OptionData, type ExpenseData, type DonorData, type BookingData } from '@/services/api';
 
 const bookingSchema = z.object({
   date: z.date({ required_error: 'Date is required' }),
@@ -35,8 +37,10 @@ export default function BookingForm() {
   const [options, setOptions] = useState<OptionData[]>([]);
   const [expenses, setExpenses] = useState<ExpenseData[]>([]);
   const [donors, setDonors] = useState<DonorData[]>([]);
+  const [bookings, setBookings] = useState<BookingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [donorSearchOpen, setDonorSearchOpen] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<BookingFormData>({
@@ -60,10 +64,11 @@ export default function BookingForm() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [optionsRes, expensesRes, donorsRes] = await Promise.all([
+        const [optionsRes, expensesRes, donorsRes, bookingsRes] = await Promise.all([
           apiService.getOptions(),
           apiService.getExpenses(),
           apiService.getDonors(),
+          apiService.getBookings(),
         ]);
 
         if (optionsRes.success && optionsRes.data) {
@@ -76,6 +81,9 @@ export default function BookingForm() {
         if (donorsRes.success && donorsRes.data) {
           console.log('Donors data structure:', donorsRes.data[0]); // Debug: Check actual column names
           setDonors(donorsRes.data);
+        }
+        if (bookingsRes.success && bookingsRes.data) {
+          setBookings(bookingsRes.data);
         }
       } catch (error) {
         toast({
@@ -147,6 +155,11 @@ export default function BookingForm() {
           particulars: '',
           amount: 0,
         });
+        // Reload bookings data
+        const bookingsRes = await apiService.getBookings();
+        if (bookingsRes.success && bookingsRes.data) {
+          setBookings(bookingsRes.data);
+        }
       } else {
         throw new Error(result.message || 'Failed to save booking');
       }
@@ -300,28 +313,67 @@ export default function BookingForm() {
                 />
               )}
 
-              {/* Donor Details - Conditional */}
+              {/* Donor Details - Conditional with Search */}
               {showDonorDetails && (
                 <FormField
                   control={form.control}
                   name="donorDetails"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Donor Details</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select donor" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-popover">
-                           {donors.map((donor) => (
-                             <SelectItem key={donor['Donor ID']} value={donor['Donor ID']}>
-                               {`${donor['Donor Name']} - ${donor['Mobile No.'] || donor['Mobile No'] || 'No Mobile'} - ${donor.Address}`}
-                             </SelectItem>
-                           ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover open={donorSearchOpen} onOpenChange={setDonorSearchOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={donorSearchOpen}
+                              className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value
+                                ? (() => {
+                                    const donor = donors.find((d) => d['Donor ID'] === field.value);
+                                    return donor ? `${donor['Donor Name']} - ${donor['Mobile No.'] || donor['Mobile No'] || 'No Mobile'}` : 'Select donor...';
+                                  })()
+                                : 'Select donor...'}
+                              <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Search donors..." />
+                            <CommandList>
+                              <CommandEmpty>No donor found.</CommandEmpty>
+                              <CommandGroup>
+                                {donors.map((donor) => (
+                                  <CommandItem
+                                    key={donor['Donor ID']}
+                                    value={`${donor['Donor Name']} ${donor['Mobile No.'] || donor['Mobile No'] || ''} ${donor.Address}`}
+                                    onSelect={() => {
+                                      field.onChange(donor['Donor ID']);
+                                      setDonorSearchOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === donor['Donor ID']
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {`${donor['Donor Name']} - ${donor['Mobile No.'] || donor['Mobile No'] || 'No Mobile'} - ${donor.Address}`}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -464,6 +516,47 @@ export default function BookingForm() {
               </Button>
             </form>
           </Form>
+        </CardContent>
+      </Card>
+
+      {/* Bookings Table */}
+      <Card className="max-w-6xl mx-auto mt-8">
+        <CardHeader>
+          <CardTitle>All Bookings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {bookings.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No bookings found</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>From Dept</TableHead>
+                    <TableHead>To Dept</TableHead>
+                    <TableHead>Particulars</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Item</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bookings.map((booking) => (
+                    <TableRow key={booking.id}>
+                      <TableCell>{booking.date}</TableCell>
+                      <TableCell>{booking.fromDepartment}</TableCell>
+                      <TableCell>{booking.toDepartment}</TableCell>
+                      <TableCell className="max-w-xs truncate">{booking.particulars}</TableCell>
+                      <TableCell>₹{booking.amount.toFixed(2)}</TableCell>
+                      <TableCell>{booking.category || '-'}</TableCell>
+                      <TableCell>{booking.item || '-'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
