@@ -64,20 +64,12 @@ export default function BookingForm() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [optionsRes, expensesRes, donorsRes] = await Promise.all([
+        const [optionsRes, expensesRes, donorsRes, bookingsRes] = await Promise.all([
           apiService.getOptions(),
           apiService.getExpenses(),
           apiService.getDonors(),
+          apiService.getBookings(),
         ]);
-
-        // Try to get bookings data
-        let bookingsRes;
-        try {
-          bookingsRes = await apiService.getBookings();
-        } catch (error) {
-          console.log('Bookings API not available yet');
-          bookingsRes = { success: false, message: 'Bookings endpoint not implemented' };
-        }
 
         if (optionsRes.success && optionsRes.data) {
           console.log('Options data structure:', optionsRes.data[0]); // Debug: Check actual column names
@@ -163,14 +155,10 @@ export default function BookingForm() {
           particulars: '',
           amount: 0,
         });
-        // Try to reload bookings data
-        try {
-          const bookingsRes = await apiService.getBookings();
-          if (bookingsRes.success && bookingsRes.data) {
-            setBookings(bookingsRes.data);
-          }
-        } catch (error) {
-          console.log('Could not reload bookings data');
+        // Reload bookings data
+        const bookingsRes = await apiService.getBookings();
+        if (bookingsRes.success && bookingsRes.data) {
+          setBookings(bookingsRes.data);
         }
       } else {
         throw new Error(result.message || 'Failed to save booking');
@@ -538,12 +526,7 @@ export default function BookingForm() {
         </CardHeader>
         <CardContent>
           {bookings.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-2">No bookings data available</p>
-              <p className="text-sm text-muted-foreground">
-                The backend needs to implement the "getBookings" action to display live data from the Bookings sheet.
-              </p>
-            </div>
+            <p className="text-center text-muted-foreground py-8">No bookings found</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
