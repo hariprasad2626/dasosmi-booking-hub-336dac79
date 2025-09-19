@@ -184,33 +184,38 @@ export default function BookingForm() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle>Create New Booking</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Date Field */}
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date</FormLabel>
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/30 to-primary/5 py-8">
+      <div className="container mx-auto px-4">
+        <Card className="max-w-2xl mx-auto bg-gradient-card shadow-elegant border-0 overflow-hidden">
+          <CardHeader className="bg-gradient-primary text-white text-center py-8">
+            <CardTitle className="text-2xl font-bold tracking-wide">✨ Create New Booking</CardTitle>
+            <p className="text-primary-foreground/90 mt-2">Fill in the details below to create your booking</p>
+          </CardHeader>
+          <CardContent className="p-8">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                {/* Date Field */}
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col group">
+                      <FormLabel className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4 text-primary" />
+                        Date
+                      </FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full pl-3 text-left font-normal",
+                              "w-full pl-3 text-left font-normal border-2 hover:border-primary/50 hover:bg-accent/50 transition-all duration-200 shadow-soft",
                               !field.value && "text-muted-foreground"
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              format(field.value, "dd-MM-yyyy")
                             ) : (
                               <span>Pick a date</span>
                             )}
@@ -233,19 +238,22 @@ export default function BookingForm() {
                 )}
               />
 
-              {/* From Department */}
-              <FormField
-                control={form.control}
-                name="fromDepartment"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>From Department</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select from department" />
-                        </SelectTrigger>
-                      </FormControl>
+                {/* From Department */}
+                <FormField
+                  control={form.control}
+                  name="fromDepartment"
+                  render={({ field }) => (
+                    <FormItem className="group">
+                      <FormLabel className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-gradient-primary"></span>
+                        From Department
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="border-2 hover:border-primary/50 focus:border-primary shadow-soft transition-all duration-200">
+                            <SelectValue placeholder="Select from department" />
+                          </SelectTrigger>
+                        </FormControl>
                       <SelectContent className="bg-popover">
                         {getUniqueOptions('From Department').map((dept) => (
                           <SelectItem key={dept} value={dept}>
@@ -259,19 +267,22 @@ export default function BookingForm() {
                 )}
               />
 
-              {/* To Department */}
-              <FormField
-                control={form.control}
-                name="toDepartment"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>To Department</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select to department" />
-                        </SelectTrigger>
-                      </FormControl>
+                {/* To Department */}
+                <FormField
+                  control={form.control}
+                  name="toDepartment"
+                  render={({ field }) => (
+                    <FormItem className="group">
+                      <FormLabel className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-gradient-primary"></span>
+                        To Department
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="border-2 hover:border-primary/50 focus:border-primary shadow-soft transition-all duration-200">
+                            <SelectValue placeholder="Select to department" />
+                          </SelectTrigger>
+                        </FormControl>
                       <SelectContent className="bg-popover">
                         {getUniqueOptions('To Department').map((dept) => (
                           <SelectItem key={dept} value={dept}>
@@ -504,14 +515,20 @@ export default function BookingForm() {
                 )}
               />
 
-              <Button type="submit" className="w-full" disabled={submitting}>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold py-3 rounded-lg shadow-elegant transition-all duration-200 transform hover:scale-[1.02]"
+              >
                 {submitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Creating Booking...
                   </>
                 ) : (
-                  'Save Booking'
+                  <>
+                    ✨ Create Booking
+                  </>
                 )}
               </Button>
             </form>
@@ -519,46 +536,87 @@ export default function BookingForm() {
         </CardContent>
       </Card>
 
-      {/* Bookings Table */}
-      <Card className="max-w-6xl mx-auto mt-8">
-        <CardHeader>
-          <CardTitle>All Bookings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {bookings.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No bookings found</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>From Dept</TableHead>
-                    <TableHead>To Dept</TableHead>
-                    <TableHead>Particulars</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Item</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {bookings.map((booking) => (
-                    <TableRow key={booking.id}>
-                      <TableCell>{booking.date}</TableCell>
-                      <TableCell>{booking.fromDepartment}</TableCell>
-                      <TableCell>{booking.toDepartment}</TableCell>
-                      <TableCell className="max-w-xs truncate">{booking.particulars}</TableCell>
-                      <TableCell>₹{booking.amount.toFixed(2)}</TableCell>
-                      <TableCell>{booking.category || '-'}</TableCell>
-                      <TableCell>{booking.item || '-'}</TableCell>
+        {/* Previous Bookings Table */}
+        {bookings.length > 0 && (
+          <Card className="max-w-6xl mx-auto mt-8 bg-gradient-card shadow-elegant border-0">
+            <CardHeader className="bg-gradient-accent border-b">
+              <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+                📊 Previous Bookings
+                <span className="text-sm bg-primary text-primary-foreground px-2 py-1 rounded-full">
+                  {bookings.length}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="font-semibold">ID</TableHead>
+                      <TableHead className="font-semibold">Date</TableHead>
+                      <TableHead className="font-semibold">From</TableHead>
+                      <TableHead className="font-semibold">To</TableHead>
+                      <TableHead className="font-semibold">Category</TableHead>
+                      <TableHead className="font-semibold">Item</TableHead>
+                      <TableHead className="font-semibold">Particulars</TableHead>
+                      <TableHead className="text-right font-semibold">Amount</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {bookings.map((booking, index) => (
+                      <TableRow
+                        key={booking.id}
+                        className={cn(
+                          "hover:bg-accent/30 transition-colors duration-200",
+                          index % 2 === 0 ? "bg-background" : "bg-muted/20"
+                        )}
+                      >
+                        <TableCell className="font-mono text-sm text-primary font-semibold">
+                          {booking.id}
+                        </TableCell>
+                        <TableCell className="font-medium">{booking.date}</TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            {booking.fromDepartment}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            {booking.toDepartment}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-muted-foreground">
+                            {booking.category || '-'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-muted-foreground">
+                            {booking.item || '-'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="max-w-xs">
+                          <div
+                            className="truncate text-sm"
+                            title={booking.particulars}
+                          >
+                            {booking.particulars}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
+                            ₹{booking.amount.toLocaleString()}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
